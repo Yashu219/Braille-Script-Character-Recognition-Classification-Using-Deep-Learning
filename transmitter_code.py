@@ -10,7 +10,7 @@ import argparse
 IMG_SIZE = 64
 MODEL_NAME = "/home/yashu/braille_cnn_pi5.keras"
 
-UART_PORT = "/dev/serial0"   # use /dev/rfcomm0 for Bluetooth
+UART_PORT = "/dev/serial0"   
 BAUD_RATE = 9600
 
 CLASS_MAP = {
