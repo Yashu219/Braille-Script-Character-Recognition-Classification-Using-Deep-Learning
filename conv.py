@@ -8,22 +8,14 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropou
 from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
-
-# =========================
-# CONFIGURATION
-# =========================
 IMG_SIZE = 64
 DATASET_PATH = r"/home/yashu/convo2d"
 MODEL_NAME = "/home/yashu/braille_cnn_pi5.keras"
 
-# Raspberry Pi 5 performance tuning
+
 tf.config.set_soft_device_placement(True)
 tf.config.threading.set_intra_op_parallelism_threads(4)
 tf.config.threading.set_inter_op_parallelism_threads(4)
-
-# =========================
-# 1. LOAD DATASET
-# =========================
 def load_dataset(path=DATASET_PATH, img_size=64):
     data, labels = [], []
     classes = sorted(os.listdir(path))
@@ -42,9 +34,6 @@ def load_dataset(path=DATASET_PATH, img_size=64):
     labels = to_categorical(np.array(labels), num_classes=len(classes))
     return data, labels, len(classes), classes
 
-# =========================
-# 2. BUILD CNN MODEL
-# =========================
 def build_cnn(input_shape=(IMG_SIZE, IMG_SIZE, 1), num_classes=5):
     model = Sequential([
         Conv2D(32, (3, 3), activation="relu", input_shape=input_shape),
@@ -70,56 +59,52 @@ def build_cnn(input_shape=(IMG_SIZE, IMG_SIZE, 1), num_classes=5):
                   metrics=["accuracy"])
     return model
 
-# =========================
-# 3. TRAIN + PREDICT + REALTIME
-# =========================
+
 def train_and_predict_then_realtime():
-    print("[📦] Loading dataset...")
+    print("Loading dataset...")
     X, y, num_classes, class_names = load_dataset(DATASET_PATH, IMG_SIZE)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    print("[🧠] Building CNN for Pi 5...")
+    print("Building CNN for Pi 5...")
     model = build_cnn((IMG_SIZE, IMG_SIZE, 1), num_classes)
 
-    print("[🚀] Training started...")
+    print("Training started...")
     model.fit(X_train, y_train, validation_data=(X_test, y_test),
               epochs=10, batch_size=16, verbose=1)
 
-    print("[💾] Saving model...")
+    print("Saving model...")
     model.save(MODEL_NAME)
 
-    print("[🔍] Evaluating model on test set...")
+    print("Evaluating model on test set...")
     y_pred = np.argmax(model.predict(X_test, verbose=0), axis=1)
     y_true = np.argmax(y_test, axis=1)
 
     acc = np.mean(y_pred == y_true)
-    print(f"\n[🎯] Test Accuracy: {acc*100:.2f}%\n")
+    print(f"\nTest Accuracy: {acc*100:.2f}%\n")
 
-    print("[📊] Classification Report:")
+    print("Classification Report:")
     print(classification_report(y_true, y_pred, target_names=class_names))
 
-    print("[🧩] Confusion Matrix:")
+    print(" Confusion Matrix:")
     print(confusion_matrix(y_true, y_pred))
 
-    print("\n✅ All predictions done. Launching realtime webcam now...\n")
+    print("\n All predictions done. Launching realtime webcam now...\n")
     realtime_prediction(model, class_names)
 
-# =========================
-# 4. REALTIME WEBCAM
-# =========================
+
 def realtime_prediction(model=None, class_names=None):
     if model is None:
         if not os.path.exists(MODEL_NAME):
-            print("[❌] No trained model found. Train first.")
+            print("No trained model found. Train first.")
             return
         model = load_model(MODEL_NAME)
 
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
-        print("[❌] Webcam not detected.")
+        print("Webcam not detected.")
         return
 
-    print("[📷] Realtime Braille recognition started. Press 'q' to quit.")
+    print("Realtime Braille recognition started. Press 'q' to quit.")
 
     while True:
         ret, frame = cap.read()
@@ -150,9 +135,7 @@ def realtime_prediction(model=None, class_names=None):
     cap.release()
     cv2.destroyAllWindows()
 
-# =========================
-# 5. MAIN ENTRY
-# =========================
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--train", action="store_true", help="Train the model then predict + realtime")
