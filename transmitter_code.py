@@ -6,9 +6,7 @@ import time
 from tensorflow.keras.models import load_model
 import argparse
 
-# ===============================
-# Configuration
-# ===============================
+
 IMG_SIZE = 64
 MODEL_NAME = "/home/yashu/braille_cnn_pi5.keras"
 
@@ -23,15 +21,13 @@ CLASS_MAP = {
     4: "5",
 }
 
-# ===============================
-# Predict Braille Digit
-# ===============================
+
 def predict_braille(image_path):
     if not os.path.exists(MODEL_NAME):
-        print("❌ Model not found")
+        print("Model not found")
         return None
     if not os.path.exists(image_path):
-        print("❌ Image not found")
+        print("Image not found")
         return None
 
     print("🧠 Loading model...")
@@ -51,27 +47,21 @@ def predict_braille(image_path):
 
     return label
 
-# ===============================
-# Send Predicted Digit over UART / Bluetooth
-# ===============================
 def send_over_uart(message, port, baud):
     try:
-        print(f"📡 Connecting to {port} at {baud}...")
+        print(f"Connecting to {port} at {baud}...")
         ser = serial.Serial(port, baud, timeout=1)
-        time.sleep(2)  # IMPORTANT for Arduino/Bluetooth
-
+        time.sleep(2)  
         ser.write((message + "\n").encode())
         ser.flush()
 
-        print(f"✅ Sent predicted digit: {message}")
+        print(f"Sent predicted digit: {message}")
         ser.close()
 
     except Exception as e:
-        print(f"❌ Serial Error: {e}")
+        print(f" Serial Error: {e}")
 
-# ===============================
-# Main
-# ===============================
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", required=True, help="Path to Braille image")
